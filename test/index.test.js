@@ -40,6 +40,19 @@ test('update single doc', t => {
   writeStream.end()
 })
 
+test('Upsert single doc', t => {
+  t.plan(2)
+
+  const client = getClient()
+  sinon.stub(client, 'bulk').callsFake((data, callback) => {
+    t.equal(data.body.length, 2)
+    t.deepEqual(data.body[1], { doc: { name: 'test' }, doc_as_upsert: true })
+  })
+  const writeStream = ebs.bulkWriteStream({ client })
+  writeStream.write({ index: 'myindex', type: 'mytype', id: '12345', action: 'upsert', doc: { name: 'test' } })
+  writeStream.end()
+})
+
 test('delete single doc', t => {
   t.plan(2)
 
